@@ -50,25 +50,9 @@ function computeCanonicalQuaternions(): Record<number, THREE.Quaternion> {
     [3, 4, 1],  // Face 8: bottom, front, left
   ];
   
-  const cameraDir = new THREE.Vector3(0, 0, 1);
-  const worldUp = new THREE.Vector3(0, 1, 0);
+  const targetNormal = new THREE.Vector3(0, 0, 1); // Face normal points toward camera (+Z)
+  const targetUp = new THREE.Vector3(0, 1, 0);     // Up direction is world up (+Y)
   const quaternions: Record<number, THREE.Quaternion> = {};
-  
-  // Use face 6 as the reference canonical face (bottom, back, right)
-  // This face should be front-facing and upright
-  const canonicalFaceIdx = 5; // Face 6 (0-indexed)
-  const [cv1Idx, cv2Idx, cv3Idx] = faces[canonicalFaceIdx];
-  const cv1 = vertices[cv1Idx];
-  const cv2 = vertices[cv2Idx];
-  const cv3 = vertices[cv3Idx];
-  
-  // Compute canonical face normal and up direction
-  const cEdge1 = new THREE.Vector3().subVectors(cv2, cv1);
-  const cEdge2 = new THREE.Vector3().subVectors(cv3, cv1);
-  const canonicalNormal = new THREE.Vector3().crossVectors(cEdge1, cEdge2).normalize();
-  const canonicalApex = [cv1, cv2, cv3].reduce((max, v) => v.y > max.y ? v : max);
-  const canonicalCenter = new THREE.Vector3().add(cv1).add(cv2).add(cv3).multiplyScalar(1/3);
-  const canonicalUp = new THREE.Vector3().subVectors(canonicalApex, canonicalCenter).normalize();
   
   for (let i = 0; i < 8; i++) {
     const [v1Idx, v2Idx, v3Idx] = faces[i];
@@ -76,82 +60,44 @@ function computeCanonicalQuaternions(): Record<number, THREE.Quaternion> {
     const v2 = vertices[v2Idx];
     const v3 = vertices[v3Idx];
     
-    // Compute face normal (ensure consistent winding)
+    // Compute face normal (pointing outward from the octahedron)
     const edge1 = new THREE.Vector3().subVectors(v2, v1);
     const edge2 = new THREE.Vector3().subVectors(v3, v1);
-    let faceNormal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
+    const faceNormal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
     
-    // Find face "up" direction (toward apex - highest Y vertex)
+    // Find the "up" direction for this face (toward the highest Y vertex = apex)
     const apex = [v1, v2, v3].reduce((max, v) => v.y > max.y ? v : max);
     const faceCenter = new THREE.Vector3()
       .add(v1)
       .add(v2)
       .add(v3)
       .multiplyScalar(1/3);
-    let faceUp = new THREE.Vector3().subVectors(apex, faceCenter).normalize();
+    const faceUp = new THREE.Vector3().subVectors(apex, faceCenter).normalize();
     
-    // Step 1: Rotate this face's normal to match canonical normal
-    let quat1 = new THREE.Quaternion();
-    quat1.setFromUnitVectors(faceNormal, canonicalNormal);
+    // Step 1: Rotate face normal to point toward camera (targetNormal = +Z)
+    const quat1 = new THREE.Quaternion();
+    quat1.setFromUnitVectors(faceNormal, targetNormal);
     
-    // Step 2: After first rotation, align the up direction
+    // Step 2: After rotating normal, align the up direction
     const rotatedUp = faceUp.clone().applyQuaternion(quat1);
-    let quat2 = new THREE.Quaternion();
     
-    // Project rotatedUp onto plane perpendicular to canonical normal
+    // Project rotatedUp onto the XY plane (perpendicular to camera direction)
     const projectedUp = rotatedUp.clone().sub(
-      canonicalNormal.clone().multiplyScalar(rotatedUp.dot(canonicalNormal))
-    ).normalize();
+      targetNormal.clone().multiplyScalar(rotatedUp.dot(targetNormal))
+    );
     
-    const projectedCanonicalUp = canonicalUp.clone().sub(
-      canonicalNormal.clone().multiplyScalar(canonicalUp.dot(canonicalNormal))
-    ).normalize();
-    
-    // Check if vectors are valid before using setFromUnitVectors
-    if (projectedUp.length() > 0.01 && projectedCanonicalUp.length() > 0.01) {
-      // Ensure vectors are normalized
+    if (projectedUp.length() > 0.01) {
       projectedUp.normalize();
-      projectedCanonicalUp.normalize();
-      quat2.setFromUnitVectors(projectedUp, projectedCanonicalUp);
-    } else {
-      quat2.identity();
-    }
-    
-    // Step 3: Rotate canonical orientation to face camera
-    let quat3 = new THREE.Quaternion();
-    quat3.setFromUnitVectors(canonicalNormal, cameraDir);
-    
-    // Step 4: Align canonical up with world up after camera rotation
-    const finalCanonicalUp = canonicalUp.clone().applyQuaternion(quat3);
-    const projectedFinalUp = finalCanonicalUp.clone().sub(
-      cameraDir.clone().multiplyScalar(finalCanonicalUp.dot(cameraDir))
-    ).normalize();
-    
-    let quat4 = new THREE.Quaternion();
-    if (projectedFinalUp.length() > 0.01) {
-      // Ensure vector is normalized
-      projectedFinalUp.normalize();
-      quat4.setFromUnitVectors(projectedFinalUp, worldUp);
-    } else {
-      quat4.identity();
-    }
-    
-    // Combine all rotations: quat4 * quat3 * quat2 * quat1
-    const finalQuat = new THREE.Quaternion()
-      .multiply(quat4)
-      .multiply(quat3)
-      .multiply(quat2)
-      .multiply(quat1);
-    
-    // Ensure quaternion is normalized and valid
-    finalQuat.normalize();
-    
-    // Validate quaternion (check for NaN or invalid values)
-    if (isNaN(finalQuat.x) || isNaN(finalQuat.y) || isNaN(finalQuat.z) || isNaN(finalQuat.w)) {
-      console.warn(`Invalid quaternion for face ${i + 1}, using identity`);
-      quaternions[i + 1] = new THREE.Quaternion();
-    } else {
+      const quat2 = new THREE.Quaternion();
+      quat2.setFromUnitVectors(projectedUp, targetUp);
+      
+      // Combine: quat2 * quat1 (apply quat1 first, then quat2)
+      const finalQuat = new THREE.Quaternion().multiply(quat2).multiply(quat1);
+      finalQuat.normalize();
       quaternions[i + 1] = finalQuat;
+    } else {
+      // Up is parallel to camera, just use quat1
+      quaternions[i + 1] = quat1.clone().normalize();
     }
   }
   

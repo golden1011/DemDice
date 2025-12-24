@@ -9,29 +9,30 @@ export default function DemDice() {
   const [task, setTask] = useState<any | null>(null);
   const [rolling, setRolling] = useState(false);
   const [diceValues, setDiceValues] = useState<{signal?: number, friction?: number, fire?: number}>({});
-  const [goldenDice, setGoldenDice] = useState<{signal?: boolean, friction?: boolean, fire?: boolean}>({});
+  // GOLDEN DICE MODE - COMMENTED OUT (can be re-enabled later)
+  // const [goldenDice, setGoldenDice] = useState<{signal?: boolean, friction?: boolean, fire?: boolean}>({});
   const [showInstructions, setShowInstructions] = useState(false);
   const [note, setNote] = useState('');
   const [shared, setShared] = useState(false);
   const [diceType, setDiceType] = useState<8 | 10 | 12 | 20>(8);
-  const [yourName, setYourName] = useState('');
-  const [friendName, setFriendName] = useState('');
-  const [friendEmail, setFriendEmail] = useState('');
-  const [yourEmail, setYourEmail] = useState('');
-  const [discord, setDiscord] = useState('');
+  // const [yourName, setYourName] = useState('');
+  // const [friendName, setFriendName] = useState('');
+  // const [friendEmail, setFriendEmail] = useState('');
+  // const [yourEmail, setYourEmail] = useState('');
+  // const [discord, setDiscord] = useState('');
 
   const handleRoll = () => {
     setRolling(true);
     setTask(null);
     setDiceValues({});
-    setGoldenDice({});
+    // setGoldenDice({});
     setNote('');
     setShared(false);
-    setYourName('');
-    setFriendName('');
-    setFriendEmail('');
-    setYourEmail('');
-    setDiscord('');
+    // setYourName('');
+    // setFriendName('');
+    // setFriendEmail('');
+    // setYourEmail('');
+    // setDiscord('');
 
     // Wait for animation to complete before showing results (25% longer: 1.5s * 1.25 = 1.875s)
     setTimeout(() => {
@@ -40,13 +41,14 @@ export default function DemDice() {
       const fi = rollDice(diceType);
       const result = generateDemDiceTask(s, fr, fi, diceType);
       
+      // GOLDEN DICE MODE - COMMENTED OUT
       // Determine golden dice (1.5% chance per dice - low odds)
-      const isSignalGolden = Math.random() < 0.015;
-      const isFrictionGolden = Math.random() < 0.015;
-      const isFireGolden = Math.random() < 0.015;
+      // const isSignalGolden = Math.random() < 0.015;
+      // const isFrictionGolden = Math.random() < 0.015;
+      // const isFireGolden = Math.random() < 0.015;
       
       setDiceValues({ signal: s, friction: fr, fire: fi });
-      setGoldenDice({ signal: isSignalGolden, friction: isFrictionGolden, fire: isFireGolden });
+      // setGoldenDice({ signal: isSignalGolden, friction: isFrictionGolden, fire: isFireGolden });
       setTask(result);
       setRolling(false);
     }, 1875); // Match the animation duration (1.875s - 25% longer)
@@ -233,6 +235,8 @@ export default function DemDice() {
                 </div>
               </div>
 
+              {/* GOLDEN DICE REWARDS SECTION - COMMENTED OUT */}
+              {/* 
               <div className="pt-4 border-t border-gray-800">
                 <h3 className="text-yellow-400 font-bold mb-3 uppercase">✨ Golden Dice Rewards</h3>
                 <div className="space-y-3 text-gray-300 text-sm">
@@ -250,6 +254,7 @@ export default function DemDice() {
                   </div>
                 </div>
               </div>
+              */}
 
               <div className="pt-4 border-t border-gray-800">
                 <p className="text-gray-400 italic">"You don't roll to win. You roll to listen."</p>
@@ -265,36 +270,42 @@ export default function DemDice() {
           label="SIGNAL" 
           value={diceValues.signal ?? task?.signal} 
           rolling={rolling} 
-          diceColor={goldenDice.signal ? "gold" : "cyan"} 
+          diceColor="cyan"
+          // GOLDEN DICE MODE - COMMENTED OUT
+          // diceColor={goldenDice.signal ? "gold" : "cyan"} 
           icon="📡" 
           diceType={diceType}
-          isGolden={goldenDice.signal}
-          hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
+          // isGolden={goldenDice.signal}
+          // hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
         />
         <Dice3D 
           label="FRICTION" 
           value={diceValues.friction ?? task?.friction} 
           rolling={rolling} 
-          diceColor={goldenDice.friction ? "gold" : "purple"} 
+          diceColor="purple"
+          // GOLDEN DICE MODE - COMMENTED OUT
+          // diceColor={goldenDice.friction ? "gold" : "purple"} 
           icon="⚡" 
           diceType={diceType}
-          isGolden={goldenDice.friction}
-          hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
+          // isGolden={goldenDice.friction}
+          // hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
         />
         <Dice3D 
           label="FIRE" 
           value={diceValues.fire ?? task?.fire} 
           rolling={rolling} 
-          diceColor={goldenDice.fire ? "gold" : "orange"} 
+          diceColor="orange"
+          // GOLDEN DICE MODE - COMMENTED OUT
+          // diceColor={goldenDice.fire ? "gold" : "orange"} 
           icon="🔥" 
           diceType={diceType}
-          isGolden={goldenDice.fire}
-          hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
+          // isGolden={goldenDice.fire}
+          // hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
         />
       </div>
 
-      {/* GOLDEN DICE REWARDS */}
-      {task && (() => {
+      {/* GOLDEN DICE REWARDS - COMMENTED OUT */}
+      {/* {task && (() => {
         const goldenCount = [goldenDice.signal, goldenDice.friction, goldenDice.fire].filter(Boolean).length;
         if (goldenCount === 0) return null;
         
@@ -498,6 +509,7 @@ export default function DemDice() {
           </div>
         );
       })()}
+      */}
 
       {/* ACTION AREA */}
       {!task && !rolling && (
@@ -551,8 +563,10 @@ export default function DemDice() {
         </div>
       )}
 
-      {/* RESULTS DISPLAY - Only show if no golden dice */}
-      {task && !([goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)) && (
+      {/* RESULTS DISPLAY */}
+      {/* GOLDEN DICE MODE - COMMENTED OUT: Only show if no golden dice */}
+      {task && (
+        // !([goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)) && 
         <div className="max-w-4xl w-full animate-in fade-in slide-in-from-bottom-4 duration-700 mt-0 flex-1 flex flex-col overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch flex-1 min-h-0">
             
