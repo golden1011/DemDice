@@ -15,7 +15,7 @@ export default function DemDice() {
   const [showInstructions, setShowInstructions] = useState(false);
   const [note, setNote] = useState('');
   const [shared, setShared] = useState(false);
-  const [diceType, setDiceType] = useState<8 | 10 | 12 | 20>(8);
+  const [diceType] = useState<8 | 10 | 12 | 20>(20);
   const [remainingRolls, setRemainingRolls] = useState<number>(5);
   // const [yourName, setYourName] = useState('');
   // const [friendName, setFriendName] = useState('');
@@ -605,32 +605,6 @@ export default function DemDice() {
       {/* ACTION AREA */}
       {!task && !rolling && (
         <div className="px-2 sm:px-4 py-2 space-y-2 sm:space-y-3 mt-2 sm:mt-4 w-full max-w-md mx-auto">
-          {/* DICE TYPE SELECTOR */}
-          <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 mt-2">
-            <span className="text-xs sm:text-sm text-gray-300 uppercase tracking-widest font-semibold">Select Dice Type:</span>
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
-              {([8, 10, 12, 20] as const).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => {
-                    if (diceType !== type) {
-                      setDiceType(type);
-                      playButtonClickSound();
-                    }
-                  }}
-                  onMouseEnter={() => playButtonHoverSound()}
-                  className={`px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base uppercase tracking-widest rounded border transition-all touch-manipulation active:scale-95 font-bold ${
-                    diceType === type
-                      ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.6)] scale-105'
-                      : 'border-gray-600 bg-gray-800/30 text-gray-500 hover:border-gray-500 hover:text-gray-400'
-                  }`}
-                >
-                  D{type}
-                </button>
-              ))}
-            </div>
-          </div>
-          
           {/* ROLL BUTTON - Always visible */}
           <button 
             onClick={() => {
@@ -764,28 +738,6 @@ export default function DemDice() {
               >
                 {shared ? (note && note.trim() ? '✓ Note Copied to Clipboard! Paste it in Discord' : '✓ Shared') : 'Share to Discord'}
               </button>
-            </div>
-            
-            {/* CHANGE DICE TYPE */}
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
-              <span className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-widest">Change Dice Type:</span>
-              {([8, 10, 12, 20] as const).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => {
-                    setDiceType(type);
-                    playButtonClickSound();
-                  }}
-                  onMouseEnter={() => playButtonHoverSound()}
-                  className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs uppercase tracking-widest rounded border transition-all active:scale-95 touch-manipulation ${
-                    diceType === type
-                      ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.5)]'
-                      : 'border-gray-600 bg-gray-800/30 text-gray-500 hover:border-gray-500 hover:text-gray-400'
-                  }`}
-                >
-                  D{type}
-                </button>
-              ))}
             </div>
           </div>
         </div>
