@@ -163,11 +163,12 @@ const faceQuaternions = computeCanonicalQuaternions();
 interface DiceMeshProps {
   value?: number;
   rolling: boolean;
-  diceColor: 'cyan' | 'purple' | 'orange';
+  diceColor: 'cyan' | 'purple' | 'orange' | 'gold';
   onRollComplete?: () => void;
+  showWin?: boolean;
 }
 
-function DiceMesh({ value, rolling, diceColor, onRollComplete }: DiceMeshProps) {
+function DiceMesh({ value, rolling, diceColor, onRollComplete, showWin = false }: DiceMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [targetQuat, setTargetQuat] = useState<THREE.Quaternion | null>(null);
   const [animProgress, setAnimProgress] = useState(0);
@@ -176,7 +177,8 @@ function DiceMesh({ value, rolling, diceColor, onRollComplete }: DiceMeshProps) 
   const colors = {
     cyan: '#06b6d4',
     purple: '#a855f7',
-    orange: '#fb923c'
+    orange: '#fb923c',
+    gold: '#fbbf24'
   };
 
   useEffect(() => {
@@ -282,7 +284,7 @@ function DiceMesh({ value, rolling, diceColor, onRollComplete }: DiceMeshProps) 
           emissiveIntensity={0.2}
         />
       </mesh>
-      <DiceNumber value={value} rolling={rolling} diceColor={diceColor} />
+      <DiceNumber value={showWin ? undefined : value} rolling={rolling} diceColor={diceColor} showWin={showWin} />
     </group>
   );
 }
@@ -290,14 +292,58 @@ function DiceMesh({ value, rolling, diceColor, onRollComplete }: DiceMeshProps) 
 interface DiceNumberProps {
   value?: number;
   rolling: boolean;
-  diceColor: 'cyan' | 'purple' | 'orange';
+  diceColor: 'cyan' | 'purple' | 'orange' | 'gold';
+  showWin?: boolean;
 }
 
-function DiceNumber({ value, rolling, diceColor }: DiceNumberProps) {
+function DiceNumber({ value, rolling, diceColor, showWin = false }: DiceNumberProps) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
   
   useEffect(() => {
-    if (value && !rolling) {
+    if (showWin && !rolling) {
+      // Create canvas texture for "WIN" text
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.font = 'bold 180px Arial';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        
+        const text = 'WIN';
+        const x = canvas.width / 2;
+        const y = canvas.height / 2;
+        
+        // Golden gradient for WIN
+        const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#fbbf24');
+        gradient.addColorStop(0.5, '#f59e0b');
+        gradient.addColorStop(1, '#d97706');
+        
+        // Draw glow effect
+        context.strokeStyle = 'rgba(251, 191, 36, 0.8)';
+        context.lineWidth = 30;
+        context.strokeText(text, x, y);
+        
+        context.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+        context.lineWidth = 20;
+        context.strokeText(text, x, y);
+        
+        context.fillStyle = gradient;
+        context.fillText(text, x, y);
+        
+        const newTexture = new THREE.CanvasTexture(canvas);
+        newTexture.needsUpdate = true;
+        setTexture(newTexture);
+        
+        return () => {
+          newTexture.dispose();
+        };
+      }
+    } else if (value && !rolling) {
       // Create canvas texture for the number
       const canvas = document.createElement('canvas');
       canvas.width = 512;
@@ -352,13 +398,13 @@ function DiceNumber({ value, rolling, diceColor }: DiceNumberProps) {
     } else {
       setTexture(null);
     }
-  }, [value, rolling]);
+  }, [value, rolling, showWin]);
 
   // Position number on the front face (always at z = distance, facing camera)
   // The number is positioned in front of the dice center, so it appears on the front face
   const distance = 2.4; // Slightly in front of the dice surface
 
-  if (!value || rolling || !texture) return null;
+  if ((!value && !showWin) || rolling || !texture) return null;
 
   return (
     <mesh 
@@ -379,19 +425,22 @@ function DiceNumber({ value, rolling, diceColor }: DiceNumberProps) {
 interface Dice3DProps {
   value?: number;
   rolling: boolean;
-  diceColor: 'cyan' | 'purple' | 'orange';
+  diceColor: 'cyan' | 'purple' | 'orange' | 'gold';
   label: string;
   icon: string;
   diceType?: 8 | 10 | 12 | 20;
+  isGolden?: boolean;
+  hasAnyGolden?: boolean;
 }
 
-export default function Dice3D({ value, rolling, diceColor, label, icon, diceType = 8 }: Dice3DProps) {
+export default function Dice3D({ value, rolling, diceColor, label, icon, diceType = 8, isGolden = false, hasAnyGolden = false }: Dice3DProps) {
   const [rollComplete, setRollComplete] = useState(false);
 
   const colorClasses = {
     cyan: { label: 'text-cyan-400', meaning: 'text-cyan-500/60' },
     purple: { label: 'text-purple-400', meaning: 'text-purple-500/60' },
-    orange: { label: 'text-orange-400', meaning: 'text-orange-500/60' }
+    orange: { label: 'text-orange-400', meaning: 'text-orange-500/60' },
+    gold: { label: 'text-yellow-400', meaning: 'text-yellow-500/60' }
   };
 
   const colors = colorClasses[diceColor];
@@ -407,10 +456,11 @@ export default function Dice3D({ value, rolling, diceColor, label, icon, diceTyp
           <directionalLight position={[5, 5, 5]} intensity={0.8} />
           <directionalLight position={[-5, -5, -5]} intensity={0.3} />
           <DiceMesh 
-            value={value} 
+            value={(hasAnyGolden && !isGolden) ? undefined : (isGolden ? undefined : value)} 
             rolling={rolling} 
             diceColor={diceColor}
             onRollComplete={() => setRollComplete(true)}
+            showWin={isGolden && !rolling && value !== undefined}
           />
         </Canvas>
       </div>
@@ -420,7 +470,7 @@ export default function Dice3D({ value, rolling, diceColor, label, icon, diceTyp
         <span>{label}</span>
       </div>
       
-      {value && (
+      {value && !hasAnyGolden && (
         <div className="flex items-center gap-1.5">
           <div className={`text-lg ${colors.meaning}`}>
             →

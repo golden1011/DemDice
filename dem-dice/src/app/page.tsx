@@ -9,17 +9,29 @@ export default function DemDice() {
   const [task, setTask] = useState<any | null>(null);
   const [rolling, setRolling] = useState(false);
   const [diceValues, setDiceValues] = useState<{signal?: number, friction?: number, fire?: number}>({});
+  const [goldenDice, setGoldenDice] = useState<{signal?: boolean, friction?: boolean, fire?: boolean}>({});
   const [showInstructions, setShowInstructions] = useState(false);
   const [note, setNote] = useState('');
   const [shared, setShared] = useState(false);
   const [diceType, setDiceType] = useState<8 | 10 | 12 | 20>(8);
+  const [yourName, setYourName] = useState('');
+  const [friendName, setFriendName] = useState('');
+  const [friendEmail, setFriendEmail] = useState('');
+  const [yourEmail, setYourEmail] = useState('');
+  const [discord, setDiscord] = useState('');
 
   const handleRoll = () => {
     setRolling(true);
     setTask(null);
     setDiceValues({});
+    setGoldenDice({});
     setNote('');
     setShared(false);
+    setYourName('');
+    setFriendName('');
+    setFriendEmail('');
+    setYourEmail('');
+    setDiscord('');
 
     // Wait for animation to complete before showing results (25% longer: 1.5s * 1.25 = 1.875s)
     setTimeout(() => {
@@ -27,7 +39,14 @@ export default function DemDice() {
       const fr = rollDice(diceType);
       const fi = rollDice(diceType);
       const result = generateDemDiceTask(s, fr, fi, diceType);
+      
+      // Determine golden dice (1.5% chance per dice - low odds)
+      const isSignalGolden = Math.random() < 0.015;
+      const isFrictionGolden = Math.random() < 0.015;
+      const isFireGolden = Math.random() < 0.015;
+      
       setDiceValues({ signal: s, friction: fr, fire: fi });
+      setGoldenDice({ signal: isSignalGolden, friction: isFrictionGolden, fire: isFireGolden });
       setTask(result);
       setRolling(false);
     }, 1875); // Match the animation duration (1.875s - 25% longer)
@@ -215,6 +234,24 @@ export default function DemDice() {
               </div>
 
               <div className="pt-4 border-t border-gray-800">
+                <h3 className="text-yellow-400 font-bold mb-3 uppercase">✨ Golden Dice Rewards</h3>
+                <div className="space-y-3 text-gray-300 text-sm">
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded">
+                    <p className="font-bold text-yellow-400 mb-1">1 Golden Dice:</p>
+                    <p>Invite a friend (name & email) who's not in MandemOS yet. Once they join, they'll be entered into a free merch draw.</p>
+                  </div>
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded">
+                    <p className="font-bold text-yellow-400 mb-1">2 Golden Dice:</p>
+                    <p>Win a $25 Mandem Giftcard! Your reward will be sent to your account.</p>
+                  </div>
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded">
+                    <p className="font-bold text-yellow-400 mb-1">3 Golden Dice (JACKPOT):</p>
+                    <p>Win 3 items of your choice from the merch store + 3 map invites! Your rewards will be processed and sent to your account.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-800">
                 <p className="text-gray-400 italic">"You don't roll to win. You roll to listen."</p>
               </div>
             </div>
@@ -224,10 +261,208 @@ export default function DemDice() {
 
       {/* THE DICE CONTAINER */}
       <div className={`flex gap-2 md:gap-6 mb-2 ${!task ? 'mt-0' : 'mt-0'}`}>
-        <Dice3D label="SIGNAL" value={diceValues.signal ?? task?.signal} rolling={rolling} diceColor="cyan" icon="📡" diceType={diceType} />
-        <Dice3D label="FRICTION" value={diceValues.friction ?? task?.friction} rolling={rolling} diceColor="purple" icon="⚡" diceType={diceType} />
-        <Dice3D label="FIRE" value={diceValues.fire ?? task?.fire} rolling={rolling} diceColor="orange" icon="🔥" diceType={diceType} />
+        <Dice3D 
+          label="SIGNAL" 
+          value={diceValues.signal ?? task?.signal} 
+          rolling={rolling} 
+          diceColor={goldenDice.signal ? "gold" : "cyan"} 
+          icon="📡" 
+          diceType={diceType}
+          isGolden={goldenDice.signal}
+          hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
+        />
+        <Dice3D 
+          label="FRICTION" 
+          value={diceValues.friction ?? task?.friction} 
+          rolling={rolling} 
+          diceColor={goldenDice.friction ? "gold" : "purple"} 
+          icon="⚡" 
+          diceType={diceType}
+          isGolden={goldenDice.friction}
+          hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
+        />
+        <Dice3D 
+          label="FIRE" 
+          value={diceValues.fire ?? task?.fire} 
+          rolling={rolling} 
+          diceColor={goldenDice.fire ? "gold" : "orange"} 
+          icon="🔥" 
+          diceType={diceType}
+          isGolden={goldenDice.fire}
+          hasAnyGolden={[goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)}
+        />
       </div>
+
+      {/* GOLDEN DICE REWARDS */}
+      {task && (() => {
+        const goldenCount = [goldenDice.signal, goldenDice.friction, goldenDice.fire].filter(Boolean).length;
+        if (goldenCount === 0) return null;
+        
+        return (
+          <div className="max-w-2xl w-full mx-auto mt-4 mb-4 p-6 bg-gradient-to-r from-yellow-500/10 via-yellow-600/10 to-yellow-500/10 border-2 border-yellow-500/50 rounded-lg">
+            <h3 className="text-2xl font-bold text-yellow-400 mb-4 text-center uppercase tracking-wider">
+              🏆 Golden Dice Reward!
+            </h3>
+            
+            {goldenCount === 1 && (
+              <div className="space-y-4">
+                <p className="text-yellow-300 text-center mb-4">
+                  You rolled <span className="font-bold">1 Golden Dice</span>! Invite a friend to MandemOS.
+                </p>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Friend's Name"
+                    value={friendName}
+                    onChange={(e) => setFriendName(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Friend's Email"
+                    value={friendEmail}
+                    onChange={(e) => setFriendEmail(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                  />
+                  <button
+                    onClick={() => {
+                      if (friendName && friendEmail) {
+                        // Here you would submit to your backend
+                        alert(`Invitation sent to ${friendName} (${friendEmail})! They'll be entered into the free merch draw.`);
+                        setFriendName('');
+                        setFriendEmail('');
+                      }
+                    }}
+                    disabled={!friendName || !friendEmail}
+                    onMouseEnter={() => playButtonHoverSound()}
+                    onClickCapture={() => playButtonClickSound()}
+                    className="w-full py-2 px-4 bg-yellow-500/20 border border-yellow-400 text-yellow-300 rounded hover:bg-yellow-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase tracking-widest text-sm"
+                  >
+                    Send Invitation
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {goldenCount === 2 && (
+              <div className="space-y-4">
+                <div className="text-center mb-4">
+                  <p className="text-yellow-300 text-lg">
+                    You rolled <span className="font-bold">2 Golden Dice</span>!
+                  </p>
+                  <p className="text-yellow-400 text-xl font-bold">
+                    🎁 You've won a $25 Mandem Giftcard!
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={yourName}
+                    onChange={(e) => setYourName(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Your Email"
+                    value={yourEmail}
+                    onChange={(e) => setYourEmail(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                  />
+                  <button
+                    onClick={() => {
+                      if (yourName && yourEmail) {
+                        // Here you would submit to your backend
+                        alert(`Coupon code for $25 will be sent to ${yourEmail}, ${yourName}!`);
+                        setTask(null);
+                        setDiceValues({});
+                        setGoldenDice({});
+                        setYourName('');
+                        setYourEmail('');
+                        setRolling(false);
+                      }
+                    }}
+                    disabled={!yourName || !yourEmail}
+                    onMouseEnter={() => playButtonHoverSound()}
+                    onClickCapture={() => playButtonClickSound()}
+                    className="w-full py-2 px-4 bg-yellow-500/20 border border-yellow-400 text-yellow-300 rounded hover:bg-yellow-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase tracking-widest text-sm"
+                  >
+                    Claim Giftcard
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {goldenCount === 3 && (
+              <div className="space-y-4">
+                <div className="text-center mb-4">
+                  <p className="text-yellow-300 text-lg">
+                    You rolled <span className="font-bold">3 Golden Dice</span>!
+                  </p>
+                  <p className="text-yellow-400 text-xl font-bold">
+                    🎉 JACKPOT! You've won:
+                  </p>
+                  <ul className="text-yellow-300 space-y-2 text-left max-w-md mx-auto mt-2">
+                    <li>• 3 items of your choice from the merch store</li>
+                    <li>• 3 map invites</li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={yourName}
+                    onChange={(e) => setYourName(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Your Email"
+                    value={yourEmail}
+                    onChange={(e) => setYourEmail(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Your Discord"
+                    value={discord}
+                    onChange={(e) => setDiscord(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                  />
+                  <textarea
+                    placeholder="Note what you won (optional)"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 min-h-[80px] resize-none"
+                  />
+                  <button
+                    onClick={() => {
+                      if (yourName && yourEmail && discord) {
+                        // Here you would submit to your backend
+                        alert(`Thank you ${yourName}! We'll contact you at ${yourEmail} and ${discord} about your jackpot prize!`);
+                        setTask(null);
+                        setDiceValues({});
+                        setGoldenDice({});
+                        setYourName('');
+                        setYourEmail('');
+                        setDiscord('');
+                        setNote('');
+                        setRolling(false);
+                      }
+                    }}
+                    disabled={!yourName || !yourEmail || !discord}
+                    onMouseEnter={() => playButtonHoverSound()}
+                    onClickCapture={() => playButtonClickSound()}
+                    className="w-full py-2 px-4 bg-yellow-500/20 border border-yellow-400 text-yellow-300 rounded hover:bg-yellow-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase tracking-widest text-sm"
+                  >
+                    Submit & Claim Jackpot
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ACTION AREA */}
       {!task && !rolling && (
@@ -281,8 +516,8 @@ export default function DemDice() {
         </div>
       )}
 
-      {/* RESULTS DISPLAY */}
-      {task && (
+      {/* RESULTS DISPLAY - Only show if no golden dice */}
+      {task && !([goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)) && (
         <div className="max-w-4xl w-full animate-in fade-in slide-in-from-bottom-4 duration-700 mt-0 flex-1 flex flex-col overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch flex-1 min-h-0">
             
