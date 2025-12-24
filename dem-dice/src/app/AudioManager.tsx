@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { getAudioContext } from './audioContext';
 
 interface AudioManagerProps {
   rolling: boolean;
@@ -65,8 +66,8 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
             // Use setTimeout to ensure error property is set
             setTimeout(() => {
               const error = audio?.error;
-              if (error && error.code !== null) {
-                // Only log if there's an actual error code
+              // Only log if there's an actual error with a valid code (1-4)
+              if (error && typeof error.code === 'number' && error.code >= 1 && error.code <= 4) {
                 const errorMessages: Record<number, string> = {
                   1: 'MEDIA_ERR_ABORTED - The user aborted the loading',
                   2: 'MEDIA_ERR_NETWORK - A network error occurred',
@@ -82,8 +83,8 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
                   readyState: audio?.readyState
                 });
               }
-              // If no error code, it might be a false alarm or the error was already handled
-              // Don't log this as it's often not a real problem
+              // If no error code or empty error object, silently ignore - it's often not a real problem
+              // This prevents logging empty error objects {}
             }, 100); // Slightly longer delay to ensure error is set
           };
           
@@ -97,7 +98,8 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
         }
         
         // Resume audio context if suspended (important for mobile)
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        // Use shared audio context instead of creating new one
+        const audioContext = getAudioContext();
         if (audioContext.state === 'suspended') {
           await audioContext.resume();
         }
@@ -124,8 +126,11 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
         }
       } catch (error) {
         // Autoplay was prevented - this is expected on mobile
-        console.log('Audio play failed:', error);
-        if (audio?.error) {
+        // Only log if it's a meaningful error (not just autoplay prevention)
+        if (error instanceof Error && error.message && !error.message.includes('play')) {
+          console.log('Audio play failed:', error);
+        }
+        if (audio?.error && typeof audio.error.code === 'number' && audio.error.code >= 1 && audio.error.code <= 4) {
           const audioError = audio.error;
           console.error('Audio element error details:', {
             code: audioError.code,
@@ -294,47 +299,48 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
   }, [rolling, onRollComplete]);
 
   const playRollSound = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
-    
-    // Create a tumbling/rolling sound effect
-    const createRollSound = () => {
-      const duration = 1.5;
-      const sampleRate = audioContext.sampleRate;
-      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-      const data = buffer.getChannelData(0);
+    try {
+      const audioContext = getAudioContext();
       
-      for (let i = 0; i < data.length; i++) {
-        // Create a chaotic tumbling sound
-        const t = i / sampleRate;
-        const freq1 = 200 + Math.sin(t * 10) * 50;
-        const freq2 = 300 + Math.cos(t * 8) * 40;
-        const freq3 = 150 + Math.sin(t * 12) * 30;
+      // Create a tumbling/rolling sound effect
+      const createRollSound = () => {
+        const duration = 1.5;
+        const sampleRate = audioContext.sampleRate;
+        const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+        const data = buffer.getChannelData(0);
         
-        data[i] = (
-          Math.sin(2 * Math.PI * freq1 * t) * 0.3 +
-          Math.sin(2 * Math.PI * freq2 * t) * 0.2 +
-          Math.sin(2 * Math.PI * freq3 * t) * 0.1
-        ) * Math.exp(-t * 0.5); // Fade out
-      }
-      
-      return buffer;
-    };
+        for (let i = 0; i < data.length; i++) {
+          // Create a chaotic tumbling sound
+          const t = i / sampleRate;
+          const freq1 = 200 + Math.sin(t * 10) * 50;
+          const freq2 = 300 + Math.cos(t * 8) * 40;
+          const freq3 = 150 + Math.sin(t * 12) * 30;
+          
+          data[i] = (
+            Math.sin(2 * Math.PI * freq1 * t) * 0.3 +
+            Math.sin(2 * Math.PI * freq2 * t) * 0.2 +
+            Math.sin(2 * Math.PI * freq3 * t) * 0.1
+          ) * Math.exp(-t * 0.5); // Fade out
+        }
+        
+        return buffer;
+      };
 
-    const buffer = createRollSound();
-    const source = audioContext.createBufferSource();
-    const gainNode = audioContext.createGain();
-    
-    source.buffer = buffer;
-    gainNode.gain.value = 0.3;
-    
-    source.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    source.start();
+      const buffer = createRollSound();
+      const source = audioContext.createBufferSource();
+      const gainNode = audioContext.createGain();
+      
+      source.buffer = buffer;
+      gainNode.gain.value = 0.3;
+      
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      source.start();
+    } catch (error) {
+      // Silently fail if audio context is unavailable (mobile restrictions)
+      console.log('Roll sound effect failed:', error);
+    }
   };
 
   // Settle sound removed - no beeping/chime sounds

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { rollDice, generateDemDiceTask, MEANINGS, DiceType } from './engine';
 import Dice3D from './Dice3D';
 import AudioManager from './AudioManager';
+import { getAudioContext } from './audioContext';
 
 export default function DemDice() {
   const [task, setTask] = useState<any | null>(null);
@@ -15,13 +16,59 @@ export default function DemDice() {
   const [note, setNote] = useState('');
   const [shared, setShared] = useState(false);
   const [diceType, setDiceType] = useState<8 | 10 | 12 | 20>(8);
+  const [remainingRolls, setRemainingRolls] = useState<number>(5);
   // const [yourName, setYourName] = useState('');
   // const [friendName, setFriendName] = useState('');
   // const [friendEmail, setFriendEmail] = useState('');
   // const [yourEmail, setYourEmail] = useState('');
   // const [discord, setDiscord] = useState('');
 
+  // Check and reset daily roll counter
+  const checkAndResetDailyRolls = () => {
+    if (typeof window === 'undefined') return 5;
+    
+    const today = new Date().toDateString();
+    const storedDate = localStorage.getItem('diceRollDate');
+    const storedRolls = localStorage.getItem('diceRollsRemaining');
+    
+    // If it's a new day, reset to 5
+    if (storedDate !== today) {
+      localStorage.setItem('diceRollDate', today);
+      localStorage.setItem('diceRollsRemaining', '5');
+      return 5;
+    }
+    
+    // Otherwise return stored value or default to 5
+    return storedRolls ? parseInt(storedRolls, 10) : 5;
+  };
+
+  // Initialize and check daily rolls on mount
+  useEffect(() => {
+    const rolls = checkAndResetDailyRolls();
+    setRemainingRolls(rolls);
+  }, []);
+
+  // Check daily rolls periodically (every minute) to catch day changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const rolls = checkAndResetDailyRolls();
+      setRemainingRolls(rolls);
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const handleRoll = async () => {
+    // Check if user has rolls remaining
+    if (remainingRolls <= 0) {
+      return; // Don't allow rolling if no rolls left
+    }
+    
+    // Decrement the counter
+    const newRolls = remainingRolls - 1;
+    setRemainingRolls(newRolls);
+    localStorage.setItem('diceRollsRemaining', newRolls.toString());
+    localStorage.setItem('diceRollDate', new Date().toDateString());
     // Start background music directly from user gesture (required for mobile)
     // @ts-ignore - global function exposed from AudioManager
     if (window.startBackgroundMusic) {
@@ -63,32 +110,34 @@ export default function DemDice() {
 
   // Cyberpunk sound effects for buttons
   const playButtonHoverSound = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
+    try {
+      const audioContext = getAudioContext();
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      const filter = audioContext.createBiquadFilter();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 800;
+      
+      filter.type = 'lowpass';
+      filter.frequency.value = 2000;
+      filter.Q.value = 1;
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.01); // Reduced by 50%
+      gainNode.gain.exponentialRampToValueAtTime(0.005, audioContext.currentTime + 0.1); // Reduced by 50%
+      
+      oscillator.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+      // Silently fail if audio context is unavailable (mobile restrictions)
+      console.log('Sound effect failed:', error);
     }
-    
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const filter = audioContext.createBiquadFilter();
-    
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 800;
-    
-    filter.type = 'lowpass';
-    filter.frequency.value = 2000;
-    filter.Q.value = 1;
-    
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.01); // Reduced by 50%
-    gainNode.gain.exponentialRampToValueAtTime(0.005, audioContext.currentTime + 0.1); // Reduced by 50%
-    
-    oscillator.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.1);
   };
 
   const playButtonClickSound = () => {
@@ -99,34 +148,36 @@ export default function DemDice() {
       window.startBackgroundMusic();
     }
     
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
+    try {
+      const audioContext = getAudioContext();
+      
+      // Create a short cyberpunk beep
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      const filter = audioContext.createBiquadFilter();
+      
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.05);
+      
+      filter.type = 'lowpass';
+      filter.frequency.value = 3000;
+      filter.Q.value = 2;
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.075, audioContext.currentTime + 0.01); // Reduced by 50%
+      gainNode.gain.exponentialRampToValueAtTime(0.005, audioContext.currentTime + 0.08); // Reduced by 50%
+      
+      oscillator.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.08);
+    } catch (error) {
+      // Silently fail if audio context is unavailable (mobile restrictions)
+      console.log('Sound effect failed:', error);
     }
-    
-    // Create a short cyberpunk beep
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const filter = audioContext.createBiquadFilter();
-    
-    oscillator.type = 'square';
-    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.05);
-    
-    filter.type = 'lowpass';
-    filter.frequency.value = 3000;
-    filter.Q.value = 2;
-    
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.075, audioContext.currentTime + 0.01); // Reduced by 50%
-    gainNode.gain.exponentialRampToValueAtTime(0.005, audioContext.currentTime + 0.08); // Reduced by 50%
-    
-    oscillator.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.08);
   };
 
   const handleShareToDiscord = async () => {
@@ -583,14 +634,26 @@ export default function DemDice() {
           {/* ROLL BUTTON - Always visible */}
           <button 
             onClick={() => {
-              playButtonClickSound();
-              handleRoll();
+              if (remainingRolls > 0) {
+                playButtonClickSound();
+                handleRoll();
+              }
             }}
-            onMouseEnter={() => playButtonHoverSound()}
-            className="w-full border border-cyan-500/50 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-orange-500/10 px-4 sm:px-8 py-2.5 sm:py-2 text-xs sm:text-sm hover:from-cyan-500/20 hover:via-purple-500/20 hover:to-orange-500/20 hover:border-cyan-400 active:scale-95 transition-all duration-300 uppercase tracking-widest text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 mt-2 touch-manipulation"
+            onMouseEnter={() => remainingRolls > 0 && playButtonHoverSound()}
+            disabled={remainingRolls <= 0}
+            className={`w-full border px-4 sm:px-8 py-2.5 sm:py-2 text-xs sm:text-sm transition-all duration-300 uppercase tracking-widest flex items-center justify-center gap-2 mt-2 touch-manipulation ${
+              remainingRolls > 0
+                ? 'border-cyan-500/50 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-orange-500/10 hover:from-cyan-500/20 hover:via-purple-500/20 hover:to-orange-500/20 hover:border-cyan-400 active:scale-95 text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+                : 'border-gray-600/50 bg-gray-800/30 text-gray-500 cursor-not-allowed opacity-50'
+            }`}
           >
-            <span className="text-base sm:text-lg animate-spin text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)]">🎲</span>
-            <span>[ Roll The Dice ]</span>
+            <span className={`text-base sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)] ${remainingRolls > 0 ? 'animate-spin' : ''}`}>🎲</span>
+            <span>
+              {remainingRolls > 0 
+                ? `[ Roll The Dice ${remainingRolls}/5 ]`
+                : '[ Can Reroll Tomorrow ]'
+              }
+            </span>
           </button>
         </div>
       )}
@@ -662,14 +725,26 @@ export default function DemDice() {
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => {
-                  playButtonClickSound();
-                  handleRoll();
+                  if (remainingRolls > 0) {
+                    playButtonClickSound();
+                    handleRoll();
+                  }
                 }}
-                onMouseEnter={() => playButtonHoverSound()}
-                className="flex-1 py-2.5 sm:py-2 px-3 sm:px-4 rounded border border-purple-500/50 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:border-purple-400 active:scale-95 transition-all uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center gap-1.5 touch-manipulation"
+                onMouseEnter={() => remainingRolls > 0 && playButtonHoverSound()}
+                disabled={remainingRolls <= 0}
+                className={`flex-1 py-2.5 sm:py-2 px-3 sm:px-4 rounded border transition-all uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center gap-1.5 touch-manipulation ${
+                  remainingRolls > 0
+                    ? 'border-purple-500/50 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:border-purple-400 active:scale-95'
+                    : 'border-gray-600/50 bg-gray-800/30 text-gray-500 cursor-not-allowed opacity-50'
+                }`}
               >
-                <span className="text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)] animate-spin">🎲</span>
-                <span>Re-Roll Dem Dice</span>
+                <span className={`text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)] ${remainingRolls > 0 ? 'animate-spin' : ''}`}>🎲</span>
+                <span>
+                  {remainingRolls > 0 
+                    ? `Re-Roll Dem Dice ${remainingRolls}/5`
+                    : 'Can Reroll Tomorrow'
+                  }
+                </span>
               </button>
               
               <button

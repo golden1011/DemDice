@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Dice Rolls</title>
+</head>
+<body>
+    <h1>Clearing localStorage...</h1>
+    <script>
+        localStorage.removeItem('diceRollDate');
+        localStorage.removeItem('diceRollsRemaining');
+        console.log('Cleared dice roll data from localStorage');
+        alert('Dice roll data cleared! You can now test with 5 rolls. Close this tab and refresh your app.');
+    </script>
+</body>
+</html>
+
