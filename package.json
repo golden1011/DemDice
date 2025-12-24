@@ -1,0 +1,10 @@
+{
+  "name": "dem-dice-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd dem-dice && npm install && npm run build",
+    "dev": "cd dem-dice && npm run dev"
+  }
+}
+
