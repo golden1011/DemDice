@@ -129,24 +129,54 @@ export default function DemDice() {
     oscillator.stop(audioContext.currentTime + 0.08);
   };
 
-  const handleShareToDiscord = () => {
+  const handleShareToDiscord = async () => {
     const discordUrl = 'https://discord.com/channels/1383509694164766811/1425148948355748161';
     
-    // Open Discord in new window
-    window.open(discordUrl, '_blank');
-    
     // Copy the note text to clipboard (if note exists)
+    // Use async/await for better mobile support
     if (note && note.trim()) {
-      navigator.clipboard.writeText(note).then(() => {
-        setShared(true);
-      }).catch(() => {
+      try {
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(note);
+          setShared(true);
+        } else {
+          // Fallback for older browsers/mobile
+          const textArea = document.createElement('textarea');
+          textArea.value = note;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          
+          try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+              setShared(true);
+            } else {
+              setShared(true); // Still mark as shared even if copy fails
+            }
+          } catch (err) {
+            setShared(true); // Still mark as shared even if copy fails
+          } finally {
+            document.body.removeChild(textArea);
+          }
+        }
+      } catch (error) {
         // If clipboard fails, still mark as shared
         setShared(true);
-      });
+      }
     } else {
       // If no note, just mark as shared
       setShared(true);
     }
+    
+    // Wait 1 second before opening Discord URL
+    setTimeout(() => {
+      window.open(discordUrl, '_blank');
+    }, 1000);
   };
 
   return (
