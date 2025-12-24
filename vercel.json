@@ -1,6 +1,5 @@
 {
   "buildCommand": "npm run build",
-  "framework": "nextjs",
-  "root": "dem-dice"
+  "framework": "nextjs"
 }
 

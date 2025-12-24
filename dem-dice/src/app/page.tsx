@@ -307,38 +307,73 @@ export default function DemDice() {
             {goldenCount === 1 && (
               <div className="space-y-4">
                 <p className="text-yellow-300 text-center mb-4">
-                  You rolled <span className="font-bold">1 Golden Dice</span>! Invite a friend to MandemOS.
+                  You rolled <span className="font-bold">1 Golden Dice</span>! Invite a friend to MandemOS and you'll both be entered to win MandemOS Merch.
                 </p>
                 <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Friend's Name"
-                    value={friendName}
-                    onChange={(e) => setFriendName(e.target.value)}
-                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Friend's Email"
-                    value={friendEmail}
-                    onChange={(e) => setFriendEmail(e.target.value)}
-                    className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
-                  />
+                  <div className="border-t border-yellow-500/30 pt-3">
+                    <p className="text-yellow-400 text-xs uppercase tracking-widest mb-2">Your Information</p>
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      value={yourName}
+                      onChange={(e) => setYourName(e.target.value)}
+                      className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 mb-2"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Your Email"
+                      value={yourEmail}
+                      onChange={(e) => setYourEmail(e.target.value)}
+                      className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 mb-2"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Your Discord (optional)"
+                      value={discord}
+                      onChange={(e) => setDiscord(e.target.value)}
+                      className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                    />
+                  </div>
+                  <div className="border-t border-yellow-500/30 pt-3">
+                    <p className="text-yellow-400 text-xs uppercase tracking-widest mb-2">Friend's Information</p>
+                    <input
+                      type="text"
+                      placeholder="Friend's Name"
+                      value={friendName}
+                      onChange={(e) => setFriendName(e.target.value)}
+                      className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 mb-2"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Friend's Email"
+                      value={friendEmail}
+                      onChange={(e) => setFriendEmail(e.target.value)}
+                      className="w-full px-4 py-2 bg-black/50 border border-yellow-500/30 rounded text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
+                    />
+                  </div>
                   <button
                     onClick={() => {
-                      if (friendName && friendEmail) {
+                      if (yourName && yourEmail && friendName && friendEmail) {
                         // Here you would submit to your backend
-                        alert(`Invitation sent to ${friendName} (${friendEmail})! They'll be entered into the free merch draw.`);
+                        alert(`Invitation sent to ${friendName} (${friendEmail})! You (${yourName}) and your friend have been entered into the MandemOS Merch draw!`);
+                        // Reset and allow re-roll
+                        setTask(null);
+                        setDiceValues({});
+                        setGoldenDice({});
+                        setYourName('');
+                        setYourEmail('');
+                        setDiscord('');
                         setFriendName('');
                         setFriendEmail('');
+                        setRolling(false);
                       }
                     }}
-                    disabled={!friendName || !friendEmail}
+                    disabled={!yourName || !yourEmail || !friendName || !friendEmail}
                     onMouseEnter={() => playButtonHoverSound()}
                     onClickCapture={() => playButtonClickSound()}
                     className="w-full py-2 px-4 bg-yellow-500/20 border border-yellow-400 text-yellow-300 rounded hover:bg-yellow-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase tracking-widest text-sm"
                   >
-                    Send Invitation
+                    Send Invite + Claim Draw Entry
                   </button>
                 </div>
               </div>
