@@ -22,9 +22,8 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
 
     // Start playing automatically on mount - autoplay without user interaction
     const playAudio = () => {
-      // Set autoplay attributes
+      // Set autoplay attribute
       audio.autoplay = true;
-      audio.playsInline = true;
       
       // Try to play immediately
       const playPromise = audio.play();
