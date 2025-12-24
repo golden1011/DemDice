@@ -138,11 +138,14 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
 
     // Expose startAudio globally so it can be called directly from user gestures
     globalStartBackgroundMusic = async () => {
-      // On mobile, if already started and playing, don't restart - just return
-      if (isMobile && hasStarted && audio && !audio.paused) {
+      // If already started and playing, don't restart - just return (both mobile and desktop)
+      if (hasStarted && audio && !audio.paused) {
         return; // Already playing, don't restart
       }
-      await startAudio(true);
+      // Only start if not already playing
+      if (!hasStarted) {
+        await startAudio(true);
+      }
     };
     
     // Also expose on window for direct access from button handlers
@@ -174,16 +177,16 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
     if (!isMobile) {
       const tryAutoplay = async () => {
         try {
-          // Create audio element first (desktop only)
+          // Create audio element first (desktop only) - don't preload, just play
           if (!audio) {
             audio = new Audio('/sounds-of-the-gloomy-city-of-the-future-126442.mp3');
             audio.loop = true;
             audio.volume = 0.1875; // ~19% volume (reduced by 25% from 0.25)
-            audio.preload = 'auto';
+            audio.preload = 'none'; // Don't preload on desktop - just play directly
             bgMusicRef.current = audio;
           }
           
-          // Try to start playing
+          // Try to start playing immediately
           await startAudio(false, true);
         } catch (error) {
           // Expected to fail on some browsers, will start on interaction
@@ -216,14 +219,26 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
     // Also try to start when rolling (user interaction)
     // For custom events, we still need to create/play in the handler
     const handleRollStart = async (event?: Event) => {
-      // On mobile, only start if not already started (don't restart)
-      if (isMobile && hasStarted) {
-        return;
+      // If already started and playing, don't restart - just let it loop (both mobile and desktop)
+      if (hasStarted && audio && !audio.paused) {
+        return; // Already playing, don't restart
+      }
+      
+      // If paused (shouldn't happen, but just in case), resume instead of restarting
+      if (hasStarted && audio && audio.paused) {
+        try {
+          await audio.play();
+          return;
+        } catch (error) {
+          // If resume fails, might need to restart
+          console.log('Resume failed, will restart:', error);
+        }
       }
       
       // On mobile, we MUST create and play in the same handler
       // The custom event is triggered from a real user gesture (roll button), so this will work
-      // This is the ONLY place we create audio on mobile - when user clicks roll
+      // This is the ONLY place we create audio on mobile - when user clicks roll for the first time
+      // On desktop, this should rarely be needed since autoplay should have started it
       if (!hasStarted) {
         await startAudio(true);
       }
@@ -258,23 +273,13 @@ export default function AudioManager({ rolling, onRollComplete }: AudioManagerPr
 
   useEffect(() => {
     if (rolling) {
-      // On mobile, only trigger start if audio hasn't started yet
+      // Only trigger start if audio hasn't started yet (both mobile and desktop)
       // Once started, don't restart it - just let it loop continuously
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
-                       (typeof window !== 'undefined' && window.innerWidth < 768);
-      
-      // Only trigger start if not already started and playing (mobile)
-      // On desktop, we can always try (for autoplay retry scenarios)
-      if (!isMobile) {
-        // Desktop: always trigger (might help with autoplay)
+      // Only trigger if audio doesn't exist or is paused
+      if (!bgMusicRef.current || bgMusicRef.current.paused) {
         window.dispatchEvent(new Event('userInteraction'));
-      } else {
-        // Mobile: only trigger if audio doesn't exist or is paused
-        if (!bgMusicRef.current || bgMusicRef.current.paused) {
-          window.dispatchEvent(new Event('userInteraction'));
-        }
-        // If audio exists and is playing, do nothing - let it continue looping
       }
+      // If audio exists and is playing, do nothing - let it continue looping
       
       // Play rolling sound (this is separate from background music)
       playRollSound();
