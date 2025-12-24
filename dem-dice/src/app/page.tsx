@@ -140,24 +140,24 @@ export default function DemDice() {
   };
 
   return (
-    <main className="h-screen bg-transparent text-[#e0e0e0] font-mono flex flex-col items-center justify-start p-4 selection:bg-white selection:text-black relative overflow-hidden">
+    <main className="min-h-screen bg-transparent text-[#e0e0e0] font-mono flex flex-col items-center justify-start p-2 sm:p-4 selection:bg-white selection:text-black relative overflow-x-hidden">
       <AudioManager rolling={rolling} />
       
       {/* HEADER */}
-      <header className="w-full text-center space-y-2 mb-4 mt-2">
+      <header className="w-full text-center space-y-1 sm:space-y-2 mb-2 sm:mb-4 mt-1 sm:mt-2">
         <div className="opacity-95">
-          <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-wider flex items-center justify-center gap-2">
-            <span className="text-4xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)]">🎲</span>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-2">
+            <span className="text-3xl sm:text-4xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)]">🎲</span>
             <span className="demdice-header-glow">DemDice</span>
           </h1>
         </div>
-        <div className="opacity-70 flex items-center justify-center gap-2 text-sm md:text-base w-full max-w-fit mx-auto">
+        <div className="opacity-70 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base w-full max-w-fit mx-auto px-2">
           <span className="text-gray-300">Built For</span>
           <a href="https://mandemos.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity inline-block">
             <img 
               src="https://mandemos.com/cdn/shop/files/ChatGPT_Image_Sep_3_2025_04_04_53_PM.png?v=1756929961&width=150" 
               alt="MandemOS" 
-              className="h-8 md:h-10 w-auto"
+              className="h-6 sm:h-8 md:h-10 w-auto"
             />
           </a>
           <span className="text-gray-300">OS Players</span>
@@ -171,7 +171,7 @@ export default function DemDice() {
           playButtonClickSound();
         }}
         onMouseEnter={() => playButtonHoverSound()}
-        className="absolute top-2 right-2 w-8 h-8 rounded-full border-2 border-cyan-500/50 bg-cyan-500/20 hover:bg-cyan-500/30 hover:border-cyan-400 flex items-center justify-center text-cyan-300 text-lg font-bold transition-all z-50 shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+        className="absolute top-1 right-1 sm:top-2 sm:right-2 w-9 h-9 sm:w-8 sm:h-8 rounded-full border-2 border-cyan-500/50 bg-cyan-500/20 hover:bg-cyan-500/30 hover:border-cyan-400 active:bg-cyan-500/40 flex items-center justify-center text-cyan-300 text-base sm:text-lg font-bold transition-all z-50 shadow-[0_0_15px_rgba(6,182,212,0.5)] touch-manipulation"
         aria-label="Show instructions"
       >
         ?
@@ -179,57 +179,57 @@ export default function DemDice() {
 
       {/* INSTRUCTIONS MODAL */}
       {showInstructions && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowInstructions(false)}>
-          <div className="bg-[#0a0a0a] border border-cyan-500/30 rounded-lg p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold text-cyan-400 uppercase tracking-wider">DemDice Legend</h2>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4" onClick={() => setShowInstructions(false)}>
+          <div className="bg-[#0a0a0a] border border-cyan-500/30 rounded-lg p-4 sm:p-6 md:p-8 max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-cyan-400 uppercase tracking-wider">DemDice Legend</h2>
               <button 
                 onClick={() => {
                   setShowInstructions(false);
                   playButtonClickSound();
                 }}
                 onMouseEnter={() => playButtonHoverSound()}
-                className="text-cyan-400 hover:text-cyan-300 text-2xl"
+                className="text-cyan-400 hover:text-cyan-300 active:text-cyan-200 text-2xl sm:text-3xl w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center touch-manipulation"
               >
                 ×
               </button>
             </div>
             
-            <div className="space-y-6 text-sm">
+            <div className="space-y-4 sm:space-y-6 text-xs sm:text-sm">
               <div>
-                <h3 className="text-cyan-400 font-bold mb-2 uppercase">📡 SIGNAL</h3>
-                <p className="text-gray-300 mb-4">The core action or intention. What you're being called to do.</p>
-                <div className="grid grid-cols-4 gap-2 text-xs">
+                <h3 className="text-cyan-400 font-bold mb-2 uppercase text-sm sm:text-base">📡 SIGNAL</h3>
+                <p className="text-gray-300 mb-3 sm:mb-4 text-xs sm:text-sm">The core action or intention. What you're being called to do.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2 text-xs">
                   {Array.from({ length: diceType }, (_, i) => i + 1).map(num => (
-                    <div key={num} className="bg-cyan-500/10 border border-cyan-500/30 p-2 rounded">
-                      <div className="font-bold text-cyan-400">{num}</div>
-                      <div className="text-gray-400">{MEANINGS[diceType][num]}</div>
+                    <div key={num} className="bg-cyan-500/10 border border-cyan-500/30 p-1.5 sm:p-2 rounded">
+                      <div className="font-bold text-cyan-400 text-xs sm:text-sm">{num}</div>
+                      <div className="text-gray-400 text-[10px] sm:text-xs">{MEANINGS[diceType][num]}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h3 className="text-purple-400 font-bold mb-2 uppercase">⚡ FRICTION</h3>
-                <p className="text-gray-300 mb-4">The constraint or limitation that shapes how you approach the signal.</p>
-                <div className="grid grid-cols-4 gap-2 text-xs">
+                <h3 className="text-purple-400 font-bold mb-2 uppercase text-sm sm:text-base">⚡ FRICTION</h3>
+                <p className="text-gray-300 mb-3 sm:mb-4 text-xs sm:text-sm">The constraint or limitation that shapes how you approach the signal.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2 text-xs">
                   {Array.from({ length: diceType }, (_, i) => i + 1).map(num => (
-                    <div key={num} className="bg-purple-500/10 border border-purple-500/30 p-2 rounded">
-                      <div className="font-bold text-purple-400">{num}</div>
-                      <div className="text-gray-400">{MEANINGS[diceType][num]}</div>
+                    <div key={num} className="bg-purple-500/10 border border-purple-500/30 p-1.5 sm:p-2 rounded">
+                      <div className="font-bold text-purple-400 text-xs sm:text-sm">{num}</div>
+                      <div className="text-gray-400 text-[10px] sm:text-xs">{MEANINGS[diceType][num]}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h3 className="text-orange-400 font-bold mb-2 uppercase">🔥 FIRE</h3>
-                <p className="text-gray-300 mb-4">The completion condition. How you'll know when the task is done.</p>
-                <div className="grid grid-cols-4 gap-2 text-xs">
+                <h3 className="text-orange-400 font-bold mb-2 uppercase text-sm sm:text-base">🔥 FIRE</h3>
+                <p className="text-gray-300 mb-3 sm:mb-4 text-xs sm:text-sm">The completion condition. How you'll know when the task is done.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2 text-xs">
                   {Array.from({ length: diceType }, (_, i) => i + 1).map(num => (
-                    <div key={num} className="bg-orange-500/10 border border-orange-500/30 p-2 rounded">
-                      <div className="font-bold text-orange-400">{num}</div>
-                      <div className="text-gray-400">{MEANINGS[diceType][num]}</div>
+                    <div key={num} className="bg-orange-500/10 border border-orange-500/30 p-1.5 sm:p-2 rounded">
+                      <div className="font-bold text-orange-400 text-xs sm:text-sm">{num}</div>
+                      <div className="text-gray-400 text-[10px] sm:text-xs">{MEANINGS[diceType][num]}</div>
                     </div>
                   ))}
                 </div>
@@ -265,7 +265,7 @@ export default function DemDice() {
       )}
 
       {/* THE DICE CONTAINER */}
-      <div className={`flex gap-2 md:gap-6 mb-2 ${!task ? 'mt-0' : 'mt-0'}`}>
+      <div className={`flex gap-1 sm:gap-2 md:gap-4 lg:gap-6 mb-2 ${!task ? 'mt-0' : 'mt-0'} flex-wrap justify-center`}>
         <Dice3D 
           label="SIGNAL" 
           value={diceValues.signal ?? task?.signal} 
@@ -513,10 +513,10 @@ export default function DemDice() {
 
       {/* ACTION AREA */}
       {!task && !rolling && (
-        <div className="px-4 py-2 space-y-3 mt-4">
+        <div className="px-2 sm:px-4 py-2 space-y-2 sm:space-y-3 mt-2 sm:mt-4 w-full max-w-md mx-auto">
           {/* DICE TYPE SELECTOR */}
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <span className="text-xs text-gray-400 uppercase tracking-widest">Dice Type:</span>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-2 flex-wrap">
+            <span className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-widest">Dice Type:</span>
             {([8, 10, 12, 20] as const).map((type) => (
               <button
                 key={type}
@@ -531,7 +531,7 @@ export default function DemDice() {
                   }
                 }}
                 onMouseEnter={() => playButtonHoverSound()}
-                className={`px-3 py-1 text-xs uppercase tracking-widest rounded border transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-1 text-[10px] sm:text-xs uppercase tracking-widest rounded border transition-all touch-manipulation active:scale-95 ${
                   diceType === type
                     ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.5)]'
                     : 'border-gray-600 bg-gray-800/30 text-gray-500 hover:border-gray-500 hover:text-gray-400'
@@ -548,9 +548,9 @@ export default function DemDice() {
               handleRoll();
             }}
             onMouseEnter={() => playButtonHoverSound()}
-            className="w-full border border-cyan-500/50 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-orange-500/10 px-8 py-2 text-xs hover:from-cyan-500/20 hover:via-purple-500/20 hover:to-orange-500/20 hover:border-cyan-400 transition-all duration-300 uppercase tracking-widest text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 mt-2"
+            className="w-full border border-cyan-500/50 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-orange-500/10 px-4 sm:px-8 py-2.5 sm:py-2 text-xs sm:text-sm hover:from-cyan-500/20 hover:via-purple-500/20 hover:to-orange-500/20 hover:border-cyan-400 active:scale-95 transition-all duration-300 uppercase tracking-widest text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 mt-2 touch-manipulation"
           >
-            <span className="text-lg animate-spin text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)]">🎲</span>
+            <span className="text-base sm:text-lg animate-spin text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)]">🎲</span>
             <span>[ Roll The Dice ]</span>
           </button>
         </div>
@@ -558,7 +558,7 @@ export default function DemDice() {
 
       {/* LOADING STATE */}
       {rolling && (
-        <div className="text-xs animate-pulse tracking-widest opacity-50">
+        <div className="text-[10px] sm:text-xs animate-pulse tracking-widest opacity-50">
           LISTENING...
         </div>
       )}
@@ -567,33 +567,33 @@ export default function DemDice() {
       {/* GOLDEN DICE MODE - COMMENTED OUT: Only show if no golden dice */}
       {task && (
         // !([goldenDice.signal, goldenDice.friction, goldenDice.fire].some(Boolean)) && 
-        <div className="max-w-4xl w-full animate-in fade-in slide-in-from-bottom-4 duration-700 mt-0 flex-1 flex flex-col overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch flex-1 min-h-0">
+        <div className="max-w-4xl w-full animate-in fade-in slide-in-from-bottom-4 duration-700 mt-0 flex-1 flex flex-col overflow-hidden px-2 sm:px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch flex-1 min-h-0">
             
             {/* LEFT COLUMN - THE CARD */}
-            <div className="border-l-2 border-cyan-500/20 pl-4 py-1 space-y-3 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-orange-500/5 p-3 rounded-lg flex flex-col overflow-y-auto">
+            <div className="border-l-2 border-cyan-500/20 pl-2 sm:pl-4 py-1 space-y-2 sm:space-y-3 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-orange-500/5 p-2 sm:p-3 rounded-lg flex flex-col overflow-y-auto">
               
-              <div className="pt-2">
-                <h2 className="text-xs md:text-sm uppercase tracking-widest text-cyan-400/70 mb-1 flex items-center gap-1.5">
-                  <span>📡</span> Instruction
+              <div className="pt-1 sm:pt-2">
+                <h2 className="text-[10px] sm:text-xs md:text-sm uppercase tracking-widest text-cyan-400/70 mb-1 flex items-center gap-1 sm:gap-1.5">
+                  <span className="text-sm sm:text-base">📡</span> <span>Instruction</span>
                 </h2>
-                <p className="text-sm md:text-base leading-relaxed font-light text-white border-l-2 border-cyan-500/30 pl-3">
+                <p className="text-xs sm:text-sm md:text-base leading-relaxed font-light text-white border-l-2 border-cyan-500/30 pl-2 sm:pl-3">
                   {task.instruction}
                 </p>
               </div>
 
               <div>
-                <h2 className="text-xs md:text-sm uppercase tracking-widest text-purple-400/70 mb-1 flex items-center gap-1.5">
-                  <span>⚡</span> Constraint
+                <h2 className="text-[10px] sm:text-xs md:text-sm uppercase tracking-widest text-purple-400/70 mb-1 flex items-center gap-1 sm:gap-1.5">
+                  <span className="text-sm sm:text-base">⚡</span> <span>Constraint</span>
                 </h2>
-                <p className="text-sm md:text-base opacity-80 border-l-2 border-purple-500/30 pl-3">{task.constraint}</p>
+                <p className="text-xs sm:text-sm md:text-base opacity-80 border-l-2 border-purple-500/30 pl-2 sm:pl-3">{task.constraint}</p>
               </div>
 
               <div>
-                <h2 className="text-xs md:text-sm uppercase tracking-widest text-orange-400/70 mb-1 flex items-center gap-1.5">
-                  <span>🔥</span> Completion Condition
+                <h2 className="text-[10px] sm:text-xs md:text-sm uppercase tracking-widest text-orange-400/70 mb-1 flex items-center gap-1 sm:gap-1.5">
+                  <span className="text-sm sm:text-base">🔥</span> <span>Completion Condition</span>
                 </h2>
-                <p className="text-sm md:text-base opacity-80 border-l-2 border-orange-500/30 pl-3">{task.completion}</p>
+                <p className="text-xs sm:text-sm md:text-base opacity-80 border-l-2 border-orange-500/30 pl-2 sm:pl-3">{task.completion}</p>
               </div>
 
             </div>
@@ -601,12 +601,12 @@ export default function DemDice() {
             {/* RIGHT COLUMN - NOTE */}
             <div className="space-y-2 flex flex-col h-full min-h-0">
               <div className="flex-1 flex flex-col min-h-0">
-                <label className="block text-[9px] uppercase tracking-widest opacity-50 mb-1">Note what happened</label>
+                <label className="block text-[8px] sm:text-[9px] uppercase tracking-widest opacity-50 mb-1">Note what happened</label>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Document your experience, insights, or outcomes..."
-                  className="w-full flex-1 bg-[#1a1a1a] border border-[#444] rounded-sm px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors resize-none shadow-inner min-h-0"
+                  className="w-full flex-1 bg-[#1a1a1a] border border-[#444] rounded-sm px-2 sm:px-3 py-2 text-[10px] sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors resize-none shadow-inner min-h-0"
                   style={{
                     backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px)',
                     backgroundSize: '100% 20px',
@@ -619,17 +619,17 @@ export default function DemDice() {
           </div>
 
           {/* ACTION BUTTONS */}
-          <div className="mt-3 flex flex-col gap-2">
-            <div className="flex gap-2">
+          <div className="mt-2 sm:mt-3 flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => {
                   playButtonClickSound();
                   handleRoll();
                 }}
                 onMouseEnter={() => playButtonHoverSound()}
-                className="flex-1 py-2 px-4 rounded border border-purple-500/50 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:border-purple-400 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 sm:py-2 px-3 sm:px-4 rounded border border-purple-500/50 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:border-purple-400 active:scale-95 transition-all uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center gap-1.5 touch-manipulation"
               >
-                <span className="text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)] animate-spin">🎲</span>
+                <span className="text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 drop-shadow-[0_0_20px_rgba(139,92,246,0.5)] animate-spin">🎲</span>
                 <span>Re-Roll Dem Dice</span>
               </button>
               
@@ -642,7 +642,7 @@ export default function DemDice() {
                 }}
                 onMouseEnter={() => !shared && playButtonHoverSound()}
                 disabled={shared}
-                className={`flex-1 py-2 px-4 rounded border transition-all uppercase tracking-widest text-xs ${
+                className={`flex-1 py-2.5 sm:py-2 px-3 sm:px-4 rounded border transition-all uppercase tracking-widest text-[10px] sm:text-xs active:scale-95 touch-manipulation ${
                   shared
                     ? 'border-green-500/50 bg-green-500/10 text-green-400 cursor-not-allowed'
                     : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500'
@@ -653,8 +653,8 @@ export default function DemDice() {
             </div>
             
             {/* CHANGE DICE TYPE */}
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-xs text-gray-400 uppercase tracking-widest">Change Dice Type:</span>
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-widest">Change Dice Type:</span>
               {([8, 10, 12, 20] as const).map((type) => (
                 <button
                   key={type}
@@ -663,7 +663,7 @@ export default function DemDice() {
                     playButtonClickSound();
                   }}
                   onMouseEnter={() => playButtonHoverSound()}
-                  className={`px-3 py-1 text-xs uppercase tracking-widest rounded border transition-all ${
+                  className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs uppercase tracking-widest rounded border transition-all active:scale-95 touch-manipulation ${
                     diceType === type
                       ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.5)]'
                       : 'border-gray-600 bg-gray-800/30 text-gray-500 hover:border-gray-500 hover:text-gray-400'
@@ -678,10 +678,10 @@ export default function DemDice() {
       )}
 
       {/* FOOTER */}
-      <footer className="mt-auto pt-4 pb-2 text-center z-10">
-        <div className="opacity-30 text-[9px] uppercase tracking-widest flex items-center justify-center gap-3">
+      <footer className="mt-auto pt-2 sm:pt-4 pb-2 text-center z-10 px-2">
+        <div className="opacity-30 text-[8px] sm:text-[9px] uppercase tracking-widest flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
           <span>"You don't roll to win. You roll to listen."</span>
-          <span className="opacity-70 text-[9px] font-semibold">© 2025 Hammer Studios</span>
+          <span className="opacity-70 text-[8px] sm:text-[9px] font-semibold">© 2025 Hammer Studios</span>
         </div>
       </footer>
     </main>

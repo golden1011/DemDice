@@ -393,7 +393,7 @@ export default function Dice3D({ value, rolling, diceColor, label, icon, diceTyp
 
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <div className="w-[225px] h-[225px] md:w-[275px] md:h-[275px]">
+      <div className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] md:w-[225px] md:h-[225px] lg:w-[275px] lg:h-[275px]">
         <Canvas
           camera={{ position: [0, 0, 7], fov: 50 }}
           gl={{ antialias: true, alpha: true }}
@@ -411,17 +411,17 @@ export default function Dice3D({ value, rolling, diceColor, label, icon, diceTyp
         </Canvas>
       </div>
 
-      <div className={`text-base md:text-lg tracking-widest uppercase ${colors.label} flex items-center gap-1.5 font-bold -mt-4`}>
-        <span className="text-2xl md:text-3xl">{icon}</span>
+      <div className={`text-xs sm:text-sm md:text-base lg:text-lg tracking-widest uppercase ${colors.label} flex items-center gap-1 sm:gap-1.5 font-bold -mt-2 sm:-mt-3 md:-mt-4`}>
+        <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl">{icon}</span>
         <span>{label}</span>
       </div>
       
       {value && !hasAnyGolden && (
-        <div className="flex items-center gap-1.5">
-          <div className={`text-lg ${colors.meaning}`}>
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className={`text-sm sm:text-base md:text-lg ${colors.meaning}`}>
             →
           </div>
-          <div className={`text-base md:text-lg uppercase ${colors.meaning} tracking-tight font-semibold`}>
+          <div className={`text-xs sm:text-sm md:text-base lg:text-lg uppercase ${colors.meaning} tracking-tight font-semibold`}>
             {MEANINGS[diceType][value].split(' ')[0]}
           </div>
         </div>
