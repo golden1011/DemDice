@@ -1,7 +1,0 @@
-{
-  "buildCommand": "cd dem-dice && npm install && npm run build",
-  "outputDirectory": "dem-dice/.next",
-  "installCommand": "cd dem-dice && npm install",
-  "framework": "nextjs"
-}
-
